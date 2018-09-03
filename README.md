@@ -1,4 +1,5 @@
-# dwm-plus
+![Logo](https://gitlab.com/Suphi/dwm/raw/master/dwm.png)
+
 dwm with extra features.
 
 I tried my best to follow the suckless coding style.
