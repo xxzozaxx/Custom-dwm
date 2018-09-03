@@ -1,7 +1,3 @@
-![Logo](https://gitlab.com/Suphi/dwm/raw/master/dwm.png)
-
-dwm with extra features.
-
 I tried my best to follow the suckless coding style.
 
 None of the features was patched in, i hand coded every extra feature trying my best to fix all bugs found in the patches.
@@ -51,5 +47,5 @@ As i have drastically changed the keyboard layout i have included some of the ch
 I have also included some custom commands in config.h just for my setup feel free to delete these.
 ***
 ### Related Projects
-* [dstatus](https://github.com/5uphi/dstatus)
-* [Font Status Icons](https://github.com/5uphi/Font-Status-Icons)
+* [Dynamic Status](https://gitlab.com/Suphi/DynamicStatus)
+* [Status Icon Fonts](https://gitlab.com/Suphi/StatusIconFonts)
