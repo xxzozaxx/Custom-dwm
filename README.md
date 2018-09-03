@@ -13,41 +13,31 @@ make clean install
 ```
 ***
 ### Extra Features
-* #### Master All Sides
-   The ability to have the master view on the left, right, top and bottom.
-* #### Smart Direction
-   As we can now have the master on different sides smart direction fixes the problem of direction keys not being intuitive.
-* #### Per Tag
-   Allows each tag to have a separate layout, master count, master size and visible bar
-* #### Gaps
-   Gap between windows that can be adjusted on the fly.
-* #### Fake Fullscreen
-   Only allow windows to fullscreen into space given to them.
-* #### Hide Vacant Tags
-   Hide tags that are not in use.
-* #### Move Stack
-   Move windows around in the stack.
-* #### No Border
-   Remove the border when there is only one window visible.
-* #### Resize Corners
-   The mouse is warped to the nearest corner when resizing windows.
-* #### Bar Style
-   Removed blue title background, removed layout symbol, added extra color for unselected tags
+* Master All Sides - The ability to have the master view on the left, right, top and bottom.
+* Smart Direction - As we can now have the master on different sides smart direction fixes the problem of direction keys not being intuitive.
+* Per Tag - Allows each tag to have a separate layout, master count, master size and visible bar
+* Gaps - Gap between windows that can be adjusted on the fly.
+* Fake Fullscreen - Only allow windows to fullscreen into space given to them.
+* Hide Vacant Tags - Hide tags that are not in use.
+* Move Stack - Move windows around in the stack.
+* No Border - Remove the border when there is only one window visible.
+* Resize Corners - The mouse is warped to the nearest corner when resizing windows.
+* Bar Style - Removed blue title background, removed layout symbol, added extra color for unselected tags
+
+***
 ### Keys
 As i have drastically changed the keyboard layout i have included some of the changes below.
 
-i have also included some custom commands in config.h just for my setup feel free to delete these.
-
-main keys:
+##### Main keys:
 * mod + down|left|right|up = change window focus / resize master
 * mod + shift + down|left|right|up = move window / change master count
 
-layout keys:
+##### Layout keys:
 * mod + ctrl + down|left|right|up = move master
 * mod + ctrl + space = set floating layout
 * mod + ctrl + return = set monocle layout
 
-other keys
+##### Other keys
 * mod + space = toggle floating
 * mod + return = set as master
 * mod + pagedown|pageup = change monitor focus
@@ -55,6 +45,9 @@ other keys
 * mod + shift + left bracket|right bracket = change gap size
 * mod + esc = close window
 * mod + shift + esc = quit dwm
+
+***
+I have also included some custom commands in config.h just for my setup feel free to delete these.
 ***
 ### Related Projects
 * [dstatus](https://github.com/5uphi/dstatus)
