@@ -70,16 +70,16 @@ static const char *editorcmd[] = { "mousepad", NULL };
 static const char *colorcmd[] = { "gpick", "-p", NULL };
 static const char *printscreencmd[]  = { "sh", "-c", "maim ~/Pictures/$(date +%s).png", NULL };
 static const char *printwindowcmd[]  = { "sh", "-c", "maim -i $(xdotool getactivewindow) ~/Pictures/$(date +%s).png", NULL };
-static const char *backlightdowncmd[] = { "sh", "-c", "~/Documents/Scripts/Dynamic\\ Status/backlight.sh -5%", NULL };
-static const char *backlightupcmd[] = { "sh", "-c", "~/Documents/Scripts/Dynamic\\ Status/backlight.sh +5%", NULL };
-static const char *touchpadcmd[] = { "sh", "-c", "~/Documents/Scripts/Dynamic\\ Status/touchpad.sh", NULL };
+static const char *backlightdowncmd[] = { "sh", "-c", "~/Documents/Scripts/DynamicStatus/backlight.sh -5%", NULL };
+static const char *backlightupcmd[] = { "sh", "-c", "~/Documents/Scripts/DynamicStatus/backlight.sh +5%", NULL };
+static const char *touchpadcmd[] = { "sh", "-c", "~/Documents/Scripts/DynamicStatus/touchpad.sh", NULL };
 static const char *touchpadresetcmd[] = { "sh", "-c", "~/Documents/Scripts/reset-touchpad.sh", NULL };
-static const char *volumemutecmd[] = { "sh", "-c", "~/Documents/Scripts/Dynamic\\ Status/mute.sh toggle", NULL };
-static const char *volumedowncmd[] = { "sh", "-c", "~/Documents/Scripts/Dynamic\\ Status/volume.sh -5%", NULL };
-static const char *volumeupcmd[] = { "sh", "-c", "~/Documents/Scripts/Dynamic\\ Status/volume.sh +5%", NULL };
-static const char *connectwirelesscmd[] = { "sh", "-c", "sudo ~/Documents/Scripts/Dynamic\\ Status/wireless.sh", NULL };
-static const char *simplestatuscmd[] = { "dstatus", "s", "60", "~/Documents/Scripts/Dynamic\\ Status/simple.sh", NULL };
-static const char *advancedstatuscmd[] = { "dstatus", "s", "1", "~/Documents/Scripts/Dynamic\\ Status/advanced.sh", NULL };
+static const char *volumemutecmd[] = { "sh", "-c", "~/Documents/Scripts/DynamicStatus/mute.sh toggle", NULL };
+static const char *volumedowncmd[] = { "sh", "-c", "~/Documents/Scripts/DynamicStatus/volume.sh -5%", NULL };
+static const char *volumeupcmd[] = { "sh", "-c", "~/Documents/Scripts/DynamicStatus/volume.sh +5%", NULL };
+static const char *connectwirelesscmd[] = { "sh", "-c", "sudo ~/Documents/Scripts/DynamicStatus/wireless.sh", NULL };
+static const char *simplestatuscmd[] = { "dstatus", "s", "60", "~/Documents/Scripts/DynamicStatus/simple.sh", NULL };
+static const char *advancedstatuscmd[] = { "dstatus", "s", "1", "~/Documents/Scripts/DynamicStatus/advanced.sh", NULL };
 
 
 static Key keys[] = {
