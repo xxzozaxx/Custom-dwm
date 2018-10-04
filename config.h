@@ -2,7 +2,8 @@
 
 /* appearance */
 static const unsigned int borderpx  = 4;        /* border pixel of windows */
-static const unsigned int gappx     = 2;        /* gap pixel between windows */
+static const unsigned int gappx     = 8;        /* gap pixel between windows */
+static const unsigned int marginpx  = 16;        /* margin pixel around windows */
 static const unsigned int snap      = 16;       /* snap pixel */
 static const int showbar            = 1;        /* 0 means no bar */
 static const int topbar             = 0;        /* 0 means bottom bar */
@@ -29,12 +30,12 @@ static const Rule rules[] = {
 	 *	WM_CLASS(STRING) = instance, class
 	 *	WM_NAME(STRING) = title
 	 */
-	/* class      instance    title       tags mask     isfloating   monitor */
-	{ "imv",      NULL,       NULL,       0,            1,           -1 },
+	/*class     instance    title                 tags mask     isfloating   monitor */
+	{ NULL,     NULL,       "GIMP Startup",       0,            1,           -1 },
 };
 
 /* layout(s) */
-static const float mfact     = 0.65; /* factor of master area size [0.05..0.95] */
+static const float mfact     = 0.60; /* factor of master area size [0.05..0.95] */
 static const int nmaster     = 1;    /* number of clients in master area */
 static const int resizehints = 0;    /* 1 means respect size hints in tiled resizals */
 
@@ -116,7 +117,7 @@ static Key keys[] = {
 	{ MODKEY|ShiftMask,             XK_s,                     spawn,          {.v = simplestatuscmd } },
 	{ MODKEY|ShiftMask,             XK_a,                     spawn,          {.v = advancedstatuscmd } },
 	/* modifier                     key                       function        argument */
-	{ MODKEY|ShiftMask,             XK_b,                     togglebar,      {0} },
+	{ MODKEY,                       XK_Shift_R,               togglebar,      {0} },
 	{ MODKEY,                       XK_space,                 togglefloating, {.i = 40} },
 	{ MODKEY,                       XK_Down,                  actiondown,     {.i = 0} },
 	{ MODKEY|ShiftMask,             XK_Down,                  actiondown,     {.i = 1} },
@@ -140,8 +141,10 @@ static Key keys[] = {
 	{ MODKEY|ShiftMask,             XK_0,                     tag,            {.ui = ~0 } },
 	{ MODKEY,                       XK_Tab,                   view,           {0} },
 	{ MODKEY|ShiftMask,             XK_Tab,                   setlayout,      {0} },
-	{ MODKEY|ShiftMask,             XK_bracketleft,           setgap,         {.i = -2 } },
-	{ MODKEY|ShiftMask,             XK_bracketright,          setgap,         {.i = +2 } },
+	{ MODKEY,                       XK_bracketleft,           setgap,         {.i = -2 } },
+	{ MODKEY,                       XK_bracketright,          setgap,         {.i = +2 } },
+	{ MODKEY|ShiftMask,             XK_bracketleft,           setmargin,      {.i = -2 } },
+	{ MODKEY|ShiftMask,             XK_bracketright,          setmargin,      {.i = +2 } },
 	{ MODKEY,                       XK_Escape,                killclient,     {0} },
 	{ MODKEY|ShiftMask,             XK_Escape,                quit,           {0} },
 	TAGKEYS(                        XK_1,                                     0)

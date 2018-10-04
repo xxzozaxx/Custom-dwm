@@ -124,6 +124,7 @@ struct Monitor {
 	unsigned int tagset[2];
 	int topbar;
 	int gappx;
+	int marginpx;
 	Client *clients;
 	Client *sel;
 	Client *stack;
@@ -213,6 +214,7 @@ static void setclientstate(Client *c, long state);
 static void setfocus(Client *c);
 static void setgap(const Arg *arg);
 static void setlayout(const Arg *arg);
+static void setmargin(const Arg *arg);
 static void setmfact(const Arg *arg);
 static void setup(void);
 static void seturgent(Client *c, int urg);
@@ -764,7 +766,8 @@ createmon(void)
 	m->tagset[0] = m->tagset[1] = 1;
 	m->topbar = topbar;
 	m->gappx = gappx;
-	
+	m->marginpx = marginpx;
+
 	m->tag = ecalloc(LENGTH(tags), sizeof(Tag));
 	for (i = 0; i < LENGTH(tags); i++) {
 		m->tag[i].mfact = mfact;
@@ -1233,7 +1236,7 @@ monocle(Monitor *m)
 	if (n > 0) /* override layout symbol */
 		snprintf(m->ltsymbol, sizeof m->ltsymbol, "[%d]", n);
 	for (c = nexttiled(m->clients); c; c = nexttiled(c->next))
-		resize(c, m->wx, m->wy, m->ww - 2 * c->bw, m->wh - 2 * c->bw, 0);
+		resize(c, m->wx + m->marginpx, m->wy + m->marginpx, m->ww - m->marginpx * 2 - c->bw * 2, m->wh - m->marginpx * 2 - c->bw * 2, 0);
 }
 
 void
@@ -1444,9 +1447,10 @@ resizeclient(Client *c, int x, int y, int w, int h)
 	c->oldw = c->w; c->w = wc.width = w;
 	c->oldh = c->h; c->h = wc.height = h;
 	wc.border_width = c->bw;
-	if (((nexttiled(c->mon->clients) == c && !nexttiled(c->next))
-	    || &monocle == c->mon->tag[c->mon->seltag].lt[c->mon->tag[c->mon->seltag].sellt]->arrange)
-	    && NULL != c->mon->tag[c->mon->seltag].lt[c->mon->tag[c->mon->seltag].sellt]->arrange) {
+	if (c->mon->marginpx == 0 &&
+		c->mon->tag[c->mon->seltag].lt[c->mon->tag[c->mon->seltag].sellt]->arrange != NULL &&
+		((nexttiled(c->mon->clients) == c && !nexttiled(c->next)) ||
+		c->mon->tag[c->mon->seltag].lt[c->mon->tag[c->mon->seltag].sellt]->arrange == &monocle)) {
 		c->w = wc.width += c->bw * 2;
 		c->h = wc.height += c->bw * 2;
 		wc.border_width = 0;
@@ -1675,6 +1679,14 @@ setlayout(const Arg *arg)
 		drawbar(selmon);
 }
 
+void
+setmargin(const Arg *arg)
+{
+	if (selmon->marginpx + arg->i < 0) return;
+	selmon->marginpx += arg->i;
+	arrange(selmon);
+}
+
 /* arg > 1.0 will set mfact absolutely */
 void
 setmfact(const Arg *arg)
@@ -1840,37 +1852,22 @@ tagmon(const Arg *arg)
 void
 tiledown(Monitor *m)
 {
-	unsigned int i, n, w, r, g = 0,	t = 0, b = 0, b2 = 0, mh, mx, tx;
+	unsigned int i, n, w, r, mh, mx, tx;
 	Client *c;
-
 	for (n = 0, c = nexttiled(m->clients); c; c = nexttiled(c->next), n++);
-	if (n == 0)
-		return;
-	if (n > 1 && m->tag[m->seltag].showbar) {
-		b = m->gappx;
-		b2 = b;
-		if (m->topbar) t = b;
-	}
-	if (n > m->tag[m->seltag].nmaster) {
-		mh = m->tag[m->seltag].nmaster ? (m->wh - (g = m->gappx)) * m->tag[m->seltag].mfact : 0;
-	} else {
-		mh = m->wh;
-		b *= 2;
-		b2 = 0;
-	}
-	if (m->tag[m->seltag].nmaster == 0) {
-		b *= 2;
-	}
+	if (n == 0) return;
+	if (n > m->tag[m->seltag].nmaster) mh = m->tag[m->seltag].nmaster ? m->wh * m->tag[m->seltag].mfact + m->gappx/2 : m->marginpx;
+	else mh = m->wh - m->marginpx + m->gappx;
 	for (i = mx = tx = 0, c = nexttiled(m->clients); c; c = nexttiled(c->next), i++)
 		if (i < m->tag[m->seltag].nmaster) {
 			r = MIN(n, m->tag[m->seltag].nmaster) - i;
-			w = (m->ww - mx - m->gappx * (r - 1)) / r;
-			resize(c, m->wx + mx, m->wy + m->wh - mh + t - b2/2, w - (2*c->bw), mh - b/2 - (2*c->bw), 0);
+			w = (m->ww - m->marginpx*2 - m->gappx * (r - 1) - mx) / r;
+			resize(c, m->wx + m->marginpx + mx, m->wy + m->wh - mh + m->gappx, w - c->bw*2, mh - m->gappx - m->marginpx - c->bw*2, 0);
 			mx += WIDTH(c) + m->gappx;
 		} else {
 			r = n - i;
-			w = (m->ww - tx - m->gappx * (r - 1)) / r;
-			resize(c, m->wx + tx, m->wy + t, w - (2*c->bw), m->wh - mh - g - b/2 - (2*c->bw), 0);
+			w = (m->ww - m->marginpx*2 - m->gappx * (r - 1) - tx) / r;
+			resize(c, m->wx + m->marginpx + tx, m->wy + m->marginpx, w - c->bw*2, m->wh - mh - m->marginpx - c->bw*2, 0);
 			tx += WIDTH(c) + m->gappx;
 		}
 }
@@ -1878,30 +1875,22 @@ tiledown(Monitor *m)
 void
 tileleft(Monitor *m)
 {
-	unsigned int i, n, h, r, g = 0, t = 0, b = 0, mw, my, ty;
+	unsigned int i, n, h, r, mw, my, ty;
 	Client *c;
-
 	for (n = 0, c = nexttiled(m->clients); c; c = nexttiled(c->next), n++);
-	if (n == 0)
-		return;
-	if (n > 1 && m->tag[m->seltag].showbar) {
-		b = m->gappx;
-		if (m->topbar) t = b;
-	}
-	if (n > m->tag[m->seltag].nmaster)
-		mw = m->tag[m->seltag].nmaster ? (m->ww - (g = m->gappx)) * m->tag[m->seltag].mfact : 0;
-	else
-		mw = m->ww;
+	if (n == 0) return;
+	if (n > m->tag[m->seltag].nmaster) mw = m->tag[m->seltag].nmaster ? m->ww * m->tag[m->seltag].mfact + m->gappx/2 : m->marginpx;
+	else mw = m->ww - m->marginpx + m->gappx;
 	for (i = my = ty = 0, c = nexttiled(m->clients); c; c = nexttiled(c->next), i++)
 		if (i < m->tag[m->seltag].nmaster) {
 			r = MIN(n, m->tag[m->seltag].nmaster) - i;
-			h = (m->wh - my - m->gappx * (r - 1) - b) / r;
-			resize(c, m->wx, m->wy + my + t, mw - (2*c->bw), h - (2*c->bw), 0);
+			h = (m->wh - m->marginpx*2 - m->gappx * (r - 1) - my) / r;
+			resize(c, m->wx + m->marginpx, m->wy + m->marginpx + my, mw - m->gappx - m->marginpx - c->bw*2, h - c->bw*2, 0);
 			my += HEIGHT(c) + m->gappx;
 		} else {
 			r = n - i;
-			h = (m->wh - ty - m->gappx * (r - 1) - b) / r;
-			resize(c, m->wx + mw + g, m->wy + ty + t, m->ww - mw - g - (2*c->bw), h - (2*c->bw), 0);
+			h = (m->wh - m->marginpx*2 - m->gappx * (r - 1) - ty) / r;
+			resize(c, m->wx + mw, m->wy + m->marginpx + ty, m->ww - mw - m->marginpx - c->bw*2, h - c->bw*2, 0);
 			ty += HEIGHT(c) + m->gappx;
 		}
 }
@@ -1909,30 +1898,22 @@ tileleft(Monitor *m)
 void
 tileright(Monitor *m)
 {
-	unsigned int i, n, h, r, g = 0, t = 0, b = 0, mw, my, ty;
+	unsigned int i, n, h, r, mw, my, ty;
 	Client *c;
-
 	for (n = 0, c = nexttiled(m->clients); c; c = nexttiled(c->next), n++);
-	if (n == 0)
-		return;
-	if (n > 1 && m->tag[m->seltag].showbar) {
-		b = m->gappx;
-		if (m->topbar) t = b;
-	}
-	if (n > m->tag[m->seltag].nmaster)
-		mw = m->tag[m->seltag].nmaster ? (m->ww - (g =  m->gappx)) * m->tag[m->seltag].mfact : 0;
-	else
-		mw = m->ww;
+	if (n == 0) return;
+	if (n > m->tag[m->seltag].nmaster) mw = m->tag[m->seltag].nmaster ? m->ww * m->tag[m->seltag].mfact + m->gappx/2 : m->marginpx;
+	else mw = m->ww - m->marginpx + m->gappx;
 	for (i = my = ty = 0, c = nexttiled(m->clients); c; c = nexttiled(c->next), i++)
 		if (i < m->tag[m->seltag].nmaster) {
 			r = MIN(n, m->tag[m->seltag].nmaster) - i;
-			h = (m->wh - my - m->gappx * (r - 1) - b) / r;
-			resize(c, m->wx + m->ww - mw, m->wy + my + t, mw - (2*c->bw), h - (2*c->bw), 0);
+			h = (m->wh - m->marginpx*2 - m->gappx * (r - 1) - my) / r;
+			resize(c, m->wx + m->ww - mw + m->gappx, m->wy + m->marginpx + my, mw - m->gappx - m->marginpx - c->bw*2, h - c->bw*2, 0);
 			my += HEIGHT(c) + m->gappx;
 		} else {
 			r = n - i;
-			h = (m->wh - ty - m->gappx * (r - 1) - b) / r;
-			resize(c, m->wx, m->wy + ty + t, m->ww - mw - g - (2*c->bw), h - (2*c->bw), 0);
+			h = (m->wh - m->marginpx*2 - m->gappx * (r - 1) - ty) / r;
+			resize(c, m->wx + m->marginpx, m->wy + m->marginpx + ty, m->ww - mw - m->marginpx - c->bw*2, h - c->bw*2, 0);
 			ty += HEIGHT(c) + m->gappx;
 		}
 }
@@ -1940,37 +1921,22 @@ tileright(Monitor *m)
 void
 tileup(Monitor *m)
 {
-	unsigned int i, n, w, r, g = 0, t = 0, b = 0, b2 = 0, mh, mx, tx;
+	unsigned int i, n, w, r, mh, mx, tx;
 	Client *c;
-
 	for (n = 0, c = nexttiled(m->clients); c; c = nexttiled(c->next), n++);
-	if (n == 0)
-		return;
-	if (n > 1 && m->tag[m->seltag].showbar) {
-		b = m->gappx;
-		b2 = b;
-		if (m->topbar) t = b;
-	}
-	if (n > m->tag[m->seltag].nmaster) {
-		mh = m->tag[m->seltag].nmaster ? (m->wh - (g =  m->gappx)) * m->tag[m->seltag].mfact : 0;
-	} else {
-		mh = m->wh;
-		b *= 2;
-	}
-	if (m->tag[m->seltag].nmaster == 0) {
-		b *= 2;
-		b2 = 0;
-	}
+	if (n == 0) return;
+	if (n > m->tag[m->seltag].nmaster) mh = m->tag[m->seltag].nmaster ? m->wh * m->tag[m->seltag].mfact + m->gappx/2 : m->marginpx;
+	else mh = m->wh - m->marginpx + m->gappx;
 	for (i = mx = tx = 0, c = nexttiled(m->clients); c; c = nexttiled(c->next), i++)
 		if (i < m->tag[m->seltag].nmaster) {
 			r = MIN(n, m->tag[m->seltag].nmaster) - i;
-			w = (m->ww - mx - m->gappx * (r - 1)) / r;
-			resize(c, m->wx + mx, m->wy + t, w - (2*c->bw), mh - b/2 - (2*c->bw), 0);
+			w = (m->ww - m->marginpx*2 - m->gappx * (r - 1) - mx) / r;
+			resize(c, m->wx + m->marginpx + mx, m->wy + m->marginpx, w - c->bw*2, mh - m->gappx - m->marginpx - c->bw*2, 0);
 			mx += WIDTH(c) + m->gappx;
 		} else {
 			r = n - i;
-			w = (m->ww - tx - m->gappx * (r - 1)) / r;
-			resize(c, m->wx + tx, m->wy + mh + g + t - b2/2, w - (2*c->bw), m->wh - mh - g - b/2 - (2*c->bw), 0);
+			w = (m->ww - m->marginpx*2 - m->gappx * (r - 1) - tx) / r;
+			resize(c, m->wx + m->marginpx + tx, m->wy + mh, w - c->bw*2, m->wh - mh - m->marginpx - c->bw*2, 0);
 			tx += WIDTH(c) + m->gappx;
 		}
 }
@@ -1996,7 +1962,7 @@ togglefloating(const Arg *arg)
 				selmon->ww - (2*selmon->sel->bw) - arg->i * 2, selmon->wh - (2*selmon->sel->bw) - arg->i * 2, 0);
 		else
 			resize(selmon->sel, selmon->sel->x, selmon->sel->y,
-				selmon->sel->w, selmon->sel->h, 0);			
+				selmon->sel->w, selmon->sel->h, 0);
 	}
 	arrange(selmon);
 }
