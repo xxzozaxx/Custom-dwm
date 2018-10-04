@@ -13,7 +13,7 @@ make clean install
 * Master All Sides - The ability to have the master view on the left, right, top and bottom.
 * Smart Direction - As we can now have the master on different sides smart direction fixes the problem of direction keys not being intuitive.
 * Per Tag - Allows each tag to have a separate layout, master count, master size and visible bar
-* Gaps - Gap between windows that can be adjusted on the fly.
+* Gaps - Gap around windows that can be adjusted on the fly.
 * Fake Fullscreen - Only allow windows to fullscreen into space given to them.
 * Hide Vacant Tags - Hide tags that are not in use.
 * Move Stack - Move windows around in the stack.
@@ -38,8 +38,9 @@ As i have drastically changed the keyboard layout i have included some of the ch
 * mod + space = toggle floating
 * mod + return = set as master
 * mod + pagedown|pageup = change monitor focus
-* mod + shift + b = show/hide bar
-* mod + shift + left bracket|right bracket = change gap size
+* mod + rightshift = show/hide bar
+* mod + left bracket|right bracket = change inner gap size
+* mod + shift + left bracket|right bracket = change outer gap size
 * mod + esc = close window
 * mod + shift + esc = quit dwm
 
