@@ -3,7 +3,7 @@
 /* appearance */
 static const unsigned int borderpx  = 4;        /* border pixel of windows */
 static const unsigned int gappx     = 8;        /* gap pixel between windows */
-static const unsigned int marginpx  = 16;        /* margin pixel around windows */
+static const unsigned int marginpx  = 16;       /* margin pixel around windows */
 static const unsigned int snap      = 16;       /* snap pixel */
 static const int showbar            = 1;        /* 0 means no bar */
 static const int topbar             = 0;        /* 0 means bottom bar */

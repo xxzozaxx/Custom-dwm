@@ -1319,8 +1319,8 @@ movestack(const Arg *arg)
 {
 	Client *c = NULL, *p = NULL, *pc = NULL, *i;
 
-	if (selmon->sel->isfloating) return;
-
+	if (selmon->sel->isfloating)
+		return;
 	if (arg->i > 0) {
 		for (c = selmon->sel->next; c && (!ISVISIBLE(c) || c->isfloating); c = c->next);
 		if (!c)
@@ -1451,9 +1451,9 @@ resizeclient(Client *c, int x, int y, int w, int h)
 		c->mon->tag[c->mon->seltag].lt[c->mon->tag[c->mon->seltag].sellt]->arrange != NULL &&
 		((nexttiled(c->mon->clients) == c && !nexttiled(c->next)) ||
 		c->mon->tag[c->mon->seltag].lt[c->mon->tag[c->mon->seltag].sellt]->arrange == &monocle)) {
-		c->w = wc.width += c->bw * 2;
-		c->h = wc.height += c->bw * 2;
-		wc.border_width = 0;
+			c->w = wc.width += c->bw * 2;
+			c->h = wc.height += c->bw * 2;
+			wc.border_width = 0;
 	}
 	XConfigureWindow(dpy, c->win, CWX|CWY|CWWidth|CWHeight|CWBorderWidth, &wc);
 	configure(c);
@@ -1660,7 +1660,8 @@ setfocus(Client *c)
 void
 setgap(const Arg *arg)
 {
-	if (selmon->gappx + arg->i < 0) return;
+	if (selmon->gappx + arg->i < 0)
+		return;
 	selmon->gappx += arg->i;
 	arrange(selmon);
 }
@@ -1682,7 +1683,8 @@ setlayout(const Arg *arg)
 void
 setmargin(const Arg *arg)
 {
-	if (selmon->marginpx + arg->i < 0) return;
+	if (selmon->marginpx + arg->i < 0)
+		return;
 	selmon->marginpx += arg->i;
 	arrange(selmon);
 }
@@ -1854,8 +1856,10 @@ tiledown(Monitor *m)
 {
 	unsigned int i, n, w, r, mh, mx, tx;
 	Client *c;
+	
 	for (n = 0, c = nexttiled(m->clients); c; c = nexttiled(c->next), n++);
-	if (n == 0) return;
+	if (n == 0)
+		return;
 	if (n > m->tag[m->seltag].nmaster) mh = m->tag[m->seltag].nmaster ? m->wh * m->tag[m->seltag].mfact + m->gappx/2 : m->marginpx;
 	else mh = m->wh - m->marginpx + m->gappx;
 	for (i = mx = tx = 0, c = nexttiled(m->clients); c; c = nexttiled(c->next), i++)
@@ -1877,8 +1881,10 @@ tileleft(Monitor *m)
 {
 	unsigned int i, n, h, r, mw, my, ty;
 	Client *c;
+	
 	for (n = 0, c = nexttiled(m->clients); c; c = nexttiled(c->next), n++);
-	if (n == 0) return;
+	if (n == 0)
+		return;
 	if (n > m->tag[m->seltag].nmaster) mw = m->tag[m->seltag].nmaster ? m->ww * m->tag[m->seltag].mfact + m->gappx/2 : m->marginpx;
 	else mw = m->ww - m->marginpx + m->gappx;
 	for (i = my = ty = 0, c = nexttiled(m->clients); c; c = nexttiled(c->next), i++)
@@ -1900,8 +1906,10 @@ tileright(Monitor *m)
 {
 	unsigned int i, n, h, r, mw, my, ty;
 	Client *c;
+	
 	for (n = 0, c = nexttiled(m->clients); c; c = nexttiled(c->next), n++);
-	if (n == 0) return;
+	if (n == 0)
+		return;
 	if (n > m->tag[m->seltag].nmaster) mw = m->tag[m->seltag].nmaster ? m->ww * m->tag[m->seltag].mfact + m->gappx/2 : m->marginpx;
 	else mw = m->ww - m->marginpx + m->gappx;
 	for (i = my = ty = 0, c = nexttiled(m->clients); c; c = nexttiled(c->next), i++)
@@ -1923,8 +1931,10 @@ tileup(Monitor *m)
 {
 	unsigned int i, n, w, r, mh, mx, tx;
 	Client *c;
+	
 	for (n = 0, c = nexttiled(m->clients); c; c = nexttiled(c->next), n++);
-	if (n == 0) return;
+	if (n == 0)
+		return;
 	if (n > m->tag[m->seltag].nmaster) mh = m->tag[m->seltag].nmaster ? m->wh * m->tag[m->seltag].mfact + m->gappx/2 : m->marginpx;
 	else mh = m->wh - m->marginpx + m->gappx;
 	for (i = mx = tx = 0, c = nexttiled(m->clients); c; c = nexttiled(c->next), i++)
