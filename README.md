@@ -45,7 +45,7 @@ As i have drastically changed the keyboard layout i have included some of the ch
 * mod + shift + esc = quit dwm
 
 ***
-I have also included some custom commands in config.h just for my setup feel free to delete these.
+I have also included my custom config.h just for my setup feel free to delete config.h to use default values from config.def.h.
 ***
 ### Related Projects
 * [Dynamic Status](https://gitlab.com/Suphi/DynamicStatus)
