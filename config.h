@@ -14,12 +14,12 @@ static const char col_gray1[]       = "#222222";
 static const char col_gray2[]       = "#444444";
 static const char col_gray3[]       = "#cccccc";
 static const char col_gray4[]       = "#ffffff";
-static const char col_cyan[]        = "#215d9c";
+static const char col_blue[]        = "#215d9c";
 static const char *colors[][3]      = {
 	/*                fg         bg         border   */
 	[SchemeNorm]  = { col_gray3, col_gray1, col_gray2 },
 	[SchemeUnsel] = { col_gray3, col_gray0, col_gray2 },
-	[SchemeSel]   = { col_gray4, col_cyan,  col_cyan  },
+	[SchemeSel]   = { col_gray4, col_blue,  col_blue  },
 };
 
 /* tagging */
@@ -62,7 +62,8 @@ static const Layout layouts[] = {
 
 /* commands */
 static char dmenumon[2] = "0"; /* component of dmenucmd, manipulated in spawn() */
-static const char *dmenucmd[] = { "/home/suphi/Documents/Scripts/dmenu-custom.sh", "-b", "-i", "-m", dmenumon, "-fn", dmenufont, "-nb", col_gray1, "-nf", col_gray3, "-sb", col_cyan, "-sf", col_gray4, NULL };
+static const char *dmenucmd[] = { "/home/suphi/Documents/Scripts/dmenu-custom.sh", "-b", "-i", "-m", dmenumon, "-fn", dmenufont, "-nb", col_gray1, "-nf", col_gray3, "-sb", col_blue, "-sf", col_gray4, NULL };
+static const char *dmenucmd1[] = { "dmenu_run", "-b", "-i", "-m", dmenumon, "-fn", dmenufont, "-nb", col_gray1, "-nf", col_gray3, "-sb", col_blue, "-sf", col_gray4, NULL };
 static const char *termcmd[]  = { "urxvt", NULL };
 /* custom commands */
 static const char *browsercmd[] = { "chromium", NULL };
@@ -90,72 +91,72 @@ static const char *advancedstatuscmd[] = { "dstatus", "s", "1", "~/Documents/Scr
 
 
 static Key keys[] = {
-	/* modifier                     key                       function        argument */
-	{ 0,                            XF86XK_MonBrightnessDown, spawn,          {.v = backlightdowncmd } },
-	{ 0,                            XF86XK_MonBrightnessUp,   spawn,          {.v = backlightupcmd } },
-	{ 0,                            XF86XK_TouchpadToggle,    spawn,          {.v = touchpadcmd } },
-	{ 0,                            XF86XK_AudioMute,         spawn,          {.v = volumemutecmd } },
-	{ 0,                            XF86XK_AudioLowerVolume,  spawn,          {.v = volumedowncmd } },
-	{ 0,                            XF86XK_AudioRaiseVolume,  spawn,          {.v = volumeupcmd } },
-	{ 0,                            XF86XK_AudioPlay,         spawn,          {.v = playcmd } },
-	{ 0,                            XF86XK_AudioStop,         spawn,          {.v = stopcmd } },
-	{ 0,                            XF86XK_AudioPrev,         spawn,          {.v = prevcmd } },
-	{ 0,                            XF86XK_AudioNext,         spawn,          {.v = nextcmd } },
-	{ 0,                            XF86XK_WWW,               spawn,          {.v = touchpadresetcmd } },
-	{ 0,                            XF86XK_Launch1,           spawn,          {.v = connectwirelesscmd } },
-	{ 0,                            XF86XK_WebCam,            spawn,          {.v = connectwirelesscmd } },
-	{ 0,                            XK_Menu,                  spawn,          {.v = dmenucmd } },
-	{ 0,                            XK_Print,                 spawn,          {.v = printscreencmd } },
-	{ 0|ShiftMask,                  XK_Print,                 spawn,          {.v = printwindowcmd } },
-	{ MODKEY,                       XK_t,                     spawn,          {.v = termcmd } },
-	{ MODKEY,                       XK_b,                     spawn,          {.v = browsercmd } },
-	{ MODKEY,                       XK_f,                     spawn,          {.v = filecmd } },
-	{ MODKEY,                       XK_e,                     spawn,          {.v = editorcmd } },
-	{ MODKEY,                       XK_m,                     spawn,          {.v = mediacmd } },
-	{ MODKEY,                       XK_c,                     spawn,          {.v = calculatorcmd } },
-	{ MODKEY,                       XK_p,                     spawn,          {.v = colorcmd } },
-	{ MODKEY|ShiftMask,             XK_s,                     spawn,          {.v = simplestatuscmd } },
-	{ MODKEY|ShiftMask,             XK_a,                     spawn,          {.v = advancedstatuscmd } },
-	/* modifier                     key                       function        argument */
-	{ MODKEY,                       XK_Shift_R,               togglebar,      {0} },
-	{ MODKEY,                       XK_space,                 togglefloating, {.i = 40} },
-	{ MODKEY,                       XK_Down,                  actiondown,     {.i = 0} },
-	{ MODKEY|ShiftMask,             XK_Down,                  actiondown,     {.i = 1} },
-	{ MODKEY|ControlMask,           XK_Down,                  setlayout,      {.v = &layouts[3]} },
-	{ MODKEY,                       XK_Left,                  actionleft,     {.i = 0} },
-	{ MODKEY|ShiftMask,             XK_Left,                  actionleft,     {.i = 1} },
-	{ MODKEY|ControlMask,           XK_Left,                  setlayout,      {.v = &layouts[0]} },
-	{ MODKEY,                       XK_Right,                 actionright,    {.i = 0} },
-	{ MODKEY|ShiftMask,             XK_Right,                 actionright,    {.i = 1} },
-	{ MODKEY|ControlMask,           XK_Right,                 setlayout,      {.v = &layouts[1]} },
-	{ MODKEY,                       XK_Up,                    actionup,       {.i = 0} },
-	{ MODKEY|ShiftMask,             XK_Up,                    actionup,       {.i = 1} },
-	{ MODKEY|ControlMask,           XK_Up,                    setlayout,      {.v = &layouts[2]} },
-	{ MODKEY,                       XK_Return,                zoom,           {0} },
-	{ MODKEY|ControlMask,           XK_Return,                setlayout,      {.v = &layouts[4]} },
-	{ MODKEY,                       XK_Page_Down,             focusmon,       {.i = -1 } },
-	{ MODKEY|ShiftMask,             XK_Page_Down,             tagmon,         {.i = -1 } },
-	{ MODKEY,                       XK_Page_Up,               focusmon,       {.i = +1 } },
-	{ MODKEY|ShiftMask,             XK_Page_Up,               tagmon,         {.i = +1 } },
-	{ MODKEY,                       XK_0,                     view,           {.ui = ~0 } },
-	{ MODKEY|ShiftMask,             XK_0,                     tag,            {.ui = ~0 } },
-	{ MODKEY,                       XK_Tab,                   view,           {0} },
-	{ MODKEY|ShiftMask,             XK_Tab,                   setlayout,      {0} },
-	{ MODKEY,                       XK_bracketleft,           setgap,         {.i = -2 } },
-	{ MODKEY,                       XK_bracketright,          setgap,         {.i = +2 } },
-	{ MODKEY|ShiftMask,             XK_bracketleft,           setmargin,      {.i = -2 } },
-	{ MODKEY|ShiftMask,             XK_bracketright,          setmargin,      {.i = +2 } },
-	{ MODKEY,                       XK_Escape,                killclient,     {0} },
-	{ MODKEY|ShiftMask,             XK_Escape,                quit,           {0} },
-	TAGKEYS(                        XK_1,                                     0)
-	TAGKEYS(                        XK_2,                                     1)
-	TAGKEYS(                        XK_3,                                     2)
-	TAGKEYS(                        XK_4,                                     3)
-	TAGKEYS(                        XK_5,                                     4)
-	TAGKEYS(                        XK_6,                                     5)
-	TAGKEYS(                        XK_7,                                     6)
-	TAGKEYS(                        XK_8,                                     7)
-	TAGKEYS(                        XK_9,                                     8)
+	/* modifier              key                          function           argument */
+	{ 0,                     XF86XK_MonBrightnessDown,    spawn,             {.v = backlightdowncmd } },
+	{ 0,                     XF86XK_MonBrightnessUp,      spawn,             {.v = backlightupcmd } },
+	{ 0,                     XF86XK_TouchpadToggle,       spawn,             {.v = touchpadcmd } },
+	{ 0,                     XF86XK_AudioMute,            spawn,             {.v = volumemutecmd } },
+	{ 0,                     XF86XK_AudioLowerVolume,     spawn,             {.v = volumedowncmd } },
+	{ 0,                     XF86XK_AudioRaiseVolume,     spawn,             {.v = volumeupcmd } },
+	{ 0,                     XF86XK_AudioPlay,            spawn,             {.v = playcmd } },
+	{ 0,                     XF86XK_AudioStop,            spawn,             {.v = stopcmd } },
+	{ 0,                     XF86XK_AudioPrev,            spawn,             {.v = prevcmd } },
+	{ 0,                     XF86XK_AudioNext,            spawn,             {.v = nextcmd } },
+	{ 0,                     XF86XK_WWW,                  spawn,             {.v = touchpadresetcmd } },
+	{ 0,                     XF86XK_Launch1,              spawn,             {.v = connectwirelesscmd } },
+	{ 0,                     XF86XK_WebCam,               spawn,             {.v = connectwirelesscmd } },
+	{ 0,                     XK_Menu,                     spawn,             {.v = dmenucmd } },
+	{ MODKEY,                XK_Menu,                     spawn,             {.v = dmenucmd2 } },
+	{ 0,                     XK_Print,                    spawn,             {.v = printscreencmd } },
+	{ 0|ShiftMask,           XK_Print,                    spawn,             {.v = printwindowcmd } },
+	{ MODKEY,                XK_t,                        spawn,             {.v = termcmd } },
+	{ MODKEY,                XK_b,                        spawn,             {.v = browsercmd } },
+	{ MODKEY,                XK_f,                        spawn,             {.v = filecmd } },
+	{ MODKEY,                XK_e,                        spawn,             {.v = editorcmd } },
+	{ MODKEY,                XK_m,                        spawn,             {.v = mediacmd } },
+	{ MODKEY,                XK_c,                        spawn,             {.v = calculatorcmd } },
+	{ MODKEY,                XK_p,                        spawn,             {.v = colorcmd } },
+	{ MODKEY|ShiftMask,      XK_s,                        spawn,             {.v = simplestatuscmd } },
+	{ MODKEY|ShiftMask,      XK_a,                        spawn,             {.v = advancedstatuscmd } },
+	/* modifier              key                          function           argument */
+	{ MODKEY,                XK_space,                    togglefloating,    {.i = 40} },
+	{ MODKEY,                XK_Down,                     actiondown,        {.i = 0} },
+	{ MODKEY|ShiftMask,      XK_Down,                     actiondown,        {.i = 1} },
+	{ MODKEY|ControlMask,    XK_Down,                     setlayout,         {.v = &layouts[3]} },
+	{ MODKEY,                XK_Left,                     actionleft,        {.i = 0} },
+	{ MODKEY|ShiftMask,      XK_Left,                     actionleft,        {.i = 1} },
+	{ MODKEY|ControlMask,    XK_Left,                     setlayout,         {.v = &layouts[0]} },
+	{ MODKEY,                XK_Right,                    actionright,       {.i = 0} },
+	{ MODKEY|ShiftMask,      XK_Right,                    actionright,       {.i = 1} },
+	{ MODKEY|ControlMask,    XK_Right,                    setlayout,         {.v = &layouts[1]} },
+	{ MODKEY,                XK_Up,                       actionup,          {.i = 0} },
+	{ MODKEY|ShiftMask,      XK_Up,                       actionup,          {.i = 1} },
+	{ MODKEY|ControlMask,    XK_Up,                       setlayout,         {.v = &layouts[2]} },
+	{ MODKEY,                XK_Return,                   zoom,              {0} },
+	{ MODKEY|ControlMask,    XK_Return,                   setlayout,         {.v = &layouts[4]} },
+	{ MODKEY,                XK_Page_Down,                focusmon,          {.i = -1 } },
+	{ MODKEY|ShiftMask,      XK_Page_Down,                tagmon,            {.i = -1 } },
+	{ MODKEY,                XK_Page_Up,                  focusmon,          {.i = +1 } },
+	{ MODKEY|ShiftMask,      XK_Page_Up,                  tagmon,            {.i = +1 } },
+	{ MODKEY,                XK_0,                        view,              {.ui = ~0 } },
+	{ MODKEY|ShiftMask,      XK_0,                        tag,               {.ui = ~0 } },
+	{ MODKEY,                XK_Tab,                      view,              {0} },
+	{ MODKEY|ShiftMask,      XK_Tab,                      setlayout,         {0} },
+	{ MODKEY,                XK_bracketleft,              setgap,            {.i = -2 } },
+	{ MODKEY,                XK_bracketright,             setgap,            {.i = +2 } },
+	{ MODKEY|ShiftMask,      XK_bracketleft,              setmargin,         {.i = -2 } },
+	{ MODKEY|ShiftMask,      XK_bracketright,             setmargin,         {.i = +2 } },
+	{ MODKEY,                XK_Escape,                   killclient,        {0} },
+	{ MODKEY|ShiftMask,      XK_Escape,                   quit,              {0} },
+	TAGKEYS(                 XK_1,                                           0)
+	TAGKEYS(                 XK_2,                                           1)
+	TAGKEYS(                 XK_3,                                           2)
+	TAGKEYS(                 XK_4,                                           3)
+	TAGKEYS(                 XK_5,                                           4)
+	TAGKEYS(                 XK_6,                                           5)
+	TAGKEYS(                 XK_7,                                           6)
+	TAGKEYS(                 XK_8,                                           7)
+	TAGKEYS(                 XK_9,                                           8)
 };
 
 /* button definitions */
