@@ -39,15 +39,9 @@ static const float mfact     = 0.60; /* factor of master area size [0.05..0.95] 
 static const int nmaster     = 1;    /* number of clients in master area */
 static const int resizehints = 0;    /* 1 means respect size hints in tiled resizals */
 
-static const Layout layouts[] = {
-	/* symbol     arrange function */
-	{ "[+]",      tileleft },
-	{ "[+]",      tileright },
-	{ "[+]",      tileup },
-	{ "[+]",      tiledown },
-	{ "[0]",      monocle },
-	{ "[ ]",      NULL },
-};
+/* first entry is default */
+/* NULL layout function means floating behavior */
+static const Layout layouts[] = { { tileleft }, { tileright }, { tileup }, { tiledown }, { monocle }, { NULL } };
 
 /* key definitions */
 #define MODKEY Mod4Mask
@@ -161,19 +155,19 @@ static Key keys[] = {
 };
 
 /* button definitions */
-/* click can be ClkTagBar, ClkLtSymbol, ClkStatusText, ClkWinTitle, ClkClientWin, or ClkRootWin */
+/* click can be ClkTagBar, ClkWinTitle, ClkStatusText, ClkClientWin, or ClkRootWin */
 static Button buttons[] = {
 	/* click                event mask      button          function        argument */
-	{ ClkLtSymbol,          0,              Button1,        setlayout,      {0} },
-	{ ClkLtSymbol,          0,              Button3,        setlayout,      {.v = &layouts[2]} },
-	{ ClkWinTitle,          0,              Button2,        zoom,           {0} },
-	{ ClkStatusText,        0,              Button2,        spawn,          {.v = termcmd } },
-	{ ClkClientWin,         MODKEY,         Button1,        movemouse,      {0} },
-	{ ClkClientWin,         MODKEY,         Button2,        togglefloating, {0} },
-	{ ClkClientWin,         MODKEY,         Button3,        resizemouse,    {0} },
 	{ ClkTagBar,            0,              Button1,        view,           {0} },
 	{ ClkTagBar,            0,              Button3,        toggleview,     {0} },
 	{ ClkTagBar,            MODKEY,         Button1,        tag,            {0} },
 	{ ClkTagBar,            MODKEY,         Button3,        toggletag,      {0} },
+	{ ClkWinTitle,          0,              Button1,        zoom,           {0} },
+	{ ClkWinTitle,          0,              Button3,        killclient,     {0} },
+	{ ClkStatusText,        0,              Button1,        spawn,          {.v = simplestatuscmd } },
+	{ ClkStatusText,        0,              Button3,        spawn,          {.v = advancedstatuscmd } },
+	{ ClkClientWin,         MODKEY,         Button1,        movemouse,      {0} },
+	{ ClkClientWin,         MODKEY,         Button2,        togglefloating, {0} },
+	{ ClkClientWin,         MODKEY,         Button3,        resizemouse,    {0} },
 };
 

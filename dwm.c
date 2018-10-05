@@ -65,7 +65,7 @@ enum { NetSupported, NetWMName, NetWMState, NetWMCheck,
        NetWMFullscreen, NetActiveWindow, NetWMWindowType,
        NetWMWindowTypeDialog, NetClientList, NetLast }; /* EWMH atoms */
 enum { WMProtocols, WMDelete, WMState, WMTakeFocus, WMLast }; /* default atoms */
-enum { ClkTagBar, ClkLtSymbol, ClkStatusText, ClkWinTitle,
+enum { ClkTagBar, ClkStatusText, ClkWinTitle,
        ClkClientWin, ClkRootWin, ClkLast }; /* clicks */
 
 typedef union {
@@ -109,12 +109,10 @@ typedef struct {
 } Key;
 
 typedef struct {
-	const char *symbol;
 	void (*arrange)(Monitor *);
 } Layout;
 
 struct Monitor {
-	char ltsymbol[16];
 	int num;
 	int by;               /* bar geometry */
 	int mx, my, mw, mh;   /* screen size */
@@ -257,7 +255,7 @@ static const char broken[] = "broken";
 static char stext[256];
 static int screen;
 static int sw, sh;           /* X display screen geometry width, height */
-static int bh, blw = 0;      /* bar geometry */
+static int bh;               /* bar geometry */
 static int lrpad;            /* sum of left and right padding for text */
 static int (*xerrorxlib)(Display *, XErrorEvent *);
 static unsigned int numlockmask = 0;
@@ -525,7 +523,6 @@ arrange(Monitor *m)
 void
 arrangemon(Monitor *m)
 {
-	strncpy(m->ltsymbol, m->tag[m->seltag].lt[m->tag[m->seltag].sellt]->symbol, sizeof m->ltsymbol);
 	if (m->tag[m->seltag].lt[m->tag[m->seltag].sellt]->arrange)
 		m->tag[m->seltag].lt[m->tag[m->seltag].sellt]->arrange(m);
 }
@@ -572,9 +569,7 @@ buttonpress(XEvent *e)
 		if (i < LENGTH(tags)) {
 			click = ClkTagBar;
 			arg.ui = 1 << i;
-		} else if (ev->x < x + blw)
-			click = ClkLtSymbol;
-		else if (ev->x > selmon->ww - TEXTW(stext))
+		} else if (ev->x > selmon->ww - TEXTW(stext))
 			click = ClkStatusText;
 		else
 			click = ClkWinTitle;
@@ -605,7 +600,7 @@ void
 cleanup(void)
 {
 	Arg a = {.ui = ~0};
-	Layout foo = { "", NULL };
+	Layout foo = { NULL };
 	Monitor *m;
 	size_t i;
 
@@ -776,7 +771,6 @@ createmon(void)
 		m->tag[i].lt[0] = &layouts[0];
 		m->tag[i].lt[1] = &layouts[1 % LENGTH(layouts)];
 	}
-	strncpy(m->ltsymbol, layouts[0].symbol, sizeof m->ltsymbol);
 	return m;
 }
 
@@ -1233,8 +1227,6 @@ monocle(Monitor *m)
 	for (c = m->clients; c; c = c->next)
 		if (ISVISIBLE(c))
 			n++;
-	if (n > 0) /* override layout symbol */
-		snprintf(m->ltsymbol, sizeof m->ltsymbol, "[%d]", n);
 	for (c = nexttiled(m->clients); c; c = nexttiled(c->next))
 		resize(c, m->wx + m->marginpx, m->wy + m->marginpx, m->ww - m->marginpx * 2 - c->bw * 2, m->wh - m->marginpx * 2 - c->bw * 2, 0);
 }
@@ -1673,7 +1665,6 @@ setlayout(const Arg *arg)
 		selmon->tag[selmon->seltag].sellt ^= 1;
 	if (arg && arg->v)
 		selmon->tag[selmon->seltag].lt[selmon->tag[selmon->seltag].sellt] = (Layout *)arg->v;
-	strncpy(selmon->ltsymbol, selmon->tag[selmon->seltag].lt[selmon->tag[selmon->seltag].sellt]->symbol, sizeof selmon->ltsymbol);
 	if (selmon->sel)
 		arrange(selmon);
 	else
