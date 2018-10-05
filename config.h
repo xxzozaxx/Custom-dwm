@@ -63,7 +63,7 @@ static const Layout layouts[] = {
 /* commands */
 static char dmenumon[2] = "0"; /* component of dmenucmd, manipulated in spawn() */
 static const char *dmenucmd[] = { "/home/suphi/Documents/Scripts/dmenu-custom.sh", "-b", "-i", "-m", dmenumon, "-fn", dmenufont, "-nb", col_gray1, "-nf", col_gray3, "-sb", col_blue, "-sf", col_gray4, NULL };
-static const char *dmenucmd1[] = { "dmenu_run", "-b", "-i", "-m", dmenumon, "-fn", dmenufont, "-nb", col_gray1, "-nf", col_gray3, "-sb", col_blue, "-sf", col_gray4, NULL };
+static const char *dmenucmd2[] = { "dmenu_run", "-b", "-i", "-m", dmenumon, "-fn", dmenufont, "-nb", col_gray1, "-nf", col_gray3, "-sb", col_blue, "-sf", col_gray4, NULL };
 static const char *termcmd[]  = { "urxvt", NULL };
 /* custom commands */
 static const char *browsercmd[] = { "chromium", NULL };
@@ -119,6 +119,7 @@ static Key keys[] = {
 	{ MODKEY|ShiftMask,      XK_s,                        spawn,             {.v = simplestatuscmd } },
 	{ MODKEY|ShiftMask,      XK_a,                        spawn,             {.v = advancedstatuscmd } },
 	/* modifier              key                          function           argument */
+	{ MODKEY,                XK_Shift_R,                  togglebar,         {0} },
 	{ MODKEY,                XK_space,                    togglefloating,    {.i = 40} },
 	{ MODKEY,                XK_Down,                     actiondown,        {.i = 0} },
 	{ MODKEY|ShiftMask,      XK_Down,                     actiondown,        {.i = 1} },
