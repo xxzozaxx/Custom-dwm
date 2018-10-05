@@ -114,7 +114,7 @@ static Key keys[] = {
 	{ MODKEY|ShiftMask,      XK_a,                        spawn,             {.v = advancedstatuscmd } },
 	/* modifier              key                          function           argument */
 	{ MODKEY,                XK_Shift_R,                  togglebar,         {0} },
-	{ MODKEY,                XK_space,                    togglefloating,    {.i = 40} },
+	{ MODKEY,                XK_space,                    togglefloating,    {.i = 32} },
 	{ MODKEY,                XK_Down,                     actiondown,        {.i = 0} },
 	{ MODKEY|ShiftMask,      XK_Down,                     actiondown,        {.i = 1} },
 	{ MODKEY|ControlMask,    XK_Down,                     setlayout,         {.v = &layouts[3]} },
@@ -167,7 +167,7 @@ static Button buttons[] = {
 	{ ClkStatusText,        0,              Button1,        spawn,          {.v = simplestatuscmd } },
 	{ ClkStatusText,        0,              Button3,        spawn,          {.v = advancedstatuscmd } },
 	{ ClkClientWin,         MODKEY,         Button1,        movemouse,      {0} },
-	{ ClkClientWin,         MODKEY,         Button2,        togglefloating, {0} },
+	{ ClkClientWin,         MODKEY,         Button2,        togglefloating, {.i = 32} },
 	{ ClkClientWin,         MODKEY,         Button3,        resizemouse,    {0} },
 };
 

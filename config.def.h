@@ -65,7 +65,7 @@ static Key keys[] = {
 	{ 0,                     XK_Menu,            spawn,             {.v = dmenucmd } },
 	{ MODKEY,                XK_t,               spawn,             {.v = termcmd } },
 	{ MODKEY,                XK_Shift_R,         togglebar,         {0} },
-	{ MODKEY,                XK_space,           togglefloating,    {.i = 40} },
+	{ MODKEY,                XK_space,           togglefloating,    {.i = 32} },
 	{ MODKEY,                XK_Down,            actiondown,        {.i = 0} },
 	{ MODKEY|ShiftMask,      XK_Down,            actiondown,        {.i = 1} },
 	{ MODKEY|ControlMask,    XK_Down,            setlayout,         {.v = &layouts[3]} },
@@ -117,7 +117,7 @@ static Button buttons[] = {
 	{ ClkWinTitle,          0,              Button3,        killclient,     {0} },
 	{ ClkStatusText,        0,              Button3,        spawn,          {.v = termcmd } },
 	{ ClkClientWin,         MODKEY,         Button1,        movemouse,      {0} },
-	{ ClkClientWin,         MODKEY,         Button2,        togglefloating, {0} },
+	{ ClkClientWin,         MODKEY,         Button2,        togglefloating, {.i = 32} },
 	{ ClkClientWin,         MODKEY,         Button3,        resizemouse,    {0} },
 };
 
