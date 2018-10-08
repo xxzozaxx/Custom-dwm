@@ -26,19 +26,16 @@ make clean install
 As i have drastically changed the keyboard layout i have included some of the changes below.
 
 ##### Main keys:
-* mod + down|left|right|up = change window focus / resize master
-* mod + shift + down|left|right|up = move window / change master count
-
-##### Layout keys:
-* mod + ctrl + down|left|right|up = move master
-* mod + ctrl + space = set floating layout
-* mod + ctrl + return = set monocle layout
+* mod + down|left|right|up = change window focus
+* mod + shift + down|left|right|up = move window
+* mod + ctrl + down|left|right|up = resize master / change master count
+* mod + ctrl + shift + down|left|right|up = move master side
 
 ##### Other keys
+* mod + rightshift = toggle bar
+* mod + return = toggle monocle
 * mod + space = toggle floating
-* mod + return = set as master
 * mod + pagedown|pageup = change monitor focus
-* mod + rightshift = show/hide bar
 * mod + left bracket|right bracket = change inner gap size
 * mod + shift + left bracket|right bracket = change outer gap size
 * mod + esc = close window

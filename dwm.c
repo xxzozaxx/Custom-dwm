@@ -59,6 +59,7 @@
 #define TEXTW(X)                (drw_fontset_getwidth(drw, (X)) + lrpad)
 
 /* enums */
+enum { Master, Tile, Back, Forward }; /* directions */
 enum { CurNormal, CurBottomLeft, CurBottomRight, CurTopLeft, CurTopRight, CurMove, CurLast }; /* cursor */
 enum { SchemeNorm, SchemeUnsel, SchemeSel }; /* color schemes */
 enum { NetSupported, NetWMName, NetWMState, NetWMCheck,
@@ -143,12 +144,15 @@ typedef struct {
 struct Tag {
 	float mfact;
 	int nmaster;
+	int smaster;
+	int stile;
 	unsigned int sellt;
 	int showbar;
 	const Layout *lt[2];
 };
 
 /* function declarations */
+static void action(const int i, const int d);
 static void actiondown(const Arg *arg);
 static void actionleft(const Arg *arg);
 static void actionright(const Arg *arg);
@@ -179,8 +183,11 @@ static void expose(XEvent *e);
 static void focus(Client *c);
 static void focusin(XEvent *e);
 static void focusmon(const Arg *arg);
-static void focusstack(const Arg *arg);
 static int getrootptr(int *x, int *y);
+static Client *getstackback();
+static Client *getstackforward();
+static Client *getstackmaster();
+static Client *getstacktile();
 static long getstate(Window w);
 static int gettextprop(Window w, Atom atom, char *text, unsigned int size);
 static void grabbuttons(Client *c, int focused);
@@ -194,9 +201,7 @@ static void maprequest(XEvent *e);
 static void monocle(Monitor *m);
 static void motionnotify(XEvent *e);
 static void movemouse(const Arg *arg);
-static void movestack(const Arg *arg);
 static Client *nexttiled(Client *c);
-static void pop(Client *);
 static void propertynotify(XEvent *e);
 static void quit(const Arg *arg);
 static Monitor *recttomon(int x, int y, int w, int h);
@@ -219,6 +224,7 @@ static void seturgent(Client *c, int urg);
 static void showhide(Client *c);
 static void sigchld(int unused);
 static void spawn(const Arg *arg);
+static void swapstack(Client *c1, Client *c2);
 static void tag(const Arg *arg);
 static void tagmon(const Arg *arg);
 static void tiledown(Monitor *);
@@ -227,6 +233,7 @@ static void tileright(Monitor *);
 static void tileup(Monitor *);
 static void togglebar(const Arg *arg);
 static void togglefloating(const Arg *arg);
+static void togglemonocle(const Arg *arg);
 static void toggletag(const Arg *arg);
 static void toggleview(const Arg *arg);
 static void unfocus(Client *c, int setfocus);
@@ -248,7 +255,6 @@ static Monitor *wintomon(Window w);
 static int xerror(Display *dpy, XErrorEvent *ee);
 static int xerrordummy(Display *dpy, XErrorEvent *ee);
 static int xerrorstart(Display *dpy, XErrorEvent *ee);
-static void zoom(const Arg *arg);
 
 /* variables */
 static const char broken[] = "broken";
@@ -291,117 +297,122 @@ static Window root, wmcheckwin;
 struct NumTags { char limitexceeded[LENGTH(tags) > 31 ? -1 : 1]; };
 
 /* function implementations */
+void
+action(const int i, const int d)
+{
+	unsigned int n;
+	Client *c = NULL;
+
+	switch (i) {
+	case 0:
+		switch (d) {
+			case Master: c = getstackmaster(); break;
+			case Tile: c = getstacktile(); break;
+			case Back: c = getstackback(); break;
+			case Forward: c = getstackforward(); break;
+		}
+		if (c != NULL && c != selmon->sel) {
+			focus(c);
+			restack(selmon);
+		}
+		break;
+	case 1:
+		switch (d) {
+		case Master: swapstack(selmon->sel, getstackmaster()); break;
+		case Tile: swapstack(selmon->sel, getstacktile()); break;
+		case Back:
+			swapstack(selmon->sel, getstackback());
+			for (n = 0, c = nexttiled(selmon->clients); c; c = nexttiled(c->next), n++)
+				if (c == selmon->sel) {
+					if (n < selmon->tag[selmon->seltag].nmaster)
+						selmon->tag[selmon->seltag].smaster = n;
+					else
+						selmon->tag[selmon->seltag].stile = n - selmon->tag[selmon->seltag].nmaster;
+					break;
+				}
+			break;
+		case Forward:
+			swapstack(selmon->sel, getstackforward());
+			for (n = 0, c = nexttiled(selmon->clients); c; c = nexttiled(c->next), n++)
+				if (c == selmon->sel) {
+					if (n < selmon->tag[selmon->seltag].nmaster)
+						selmon->tag[selmon->seltag].smaster = n;
+					else
+						selmon->tag[selmon->seltag].stile = n - selmon->tag[selmon->seltag].nmaster;
+					break;
+				}
+			break;
+		}
+		break;
+	case 2:
+		switch (d) {
+			case Master: setmfact(&(const Arg){.f = -0.05}); break;
+			case Tile: setmfact(&(const Arg){.f = +0.05}); break;
+			case Back: incnmaster(&(const Arg){.i = +1}); break;
+			case Forward: incnmaster(&(const Arg){.i = -1}); break;
+		}
+		break;
+	}
+}
 
 void
 actiondown(const Arg *arg)
 {
-	switch (arg->i) {
-	case 0:
-		if (selmon->tag[selmon->seltag].lt[selmon->tag[selmon->seltag].sellt]->arrange == tiledown)
-			setmfact(&(const Arg){.f = -0.05});
-		else if (selmon->tag[selmon->seltag].lt[selmon->tag[selmon->seltag].sellt]->arrange == tileleft)
-			focusstack(&(const Arg){.i = +1});
-		else if (selmon->tag[selmon->seltag].lt[selmon->tag[selmon->seltag].sellt]->arrange == tileright)
-			focusstack(&(const Arg){.i = +1});
-		else if (selmon->tag[selmon->seltag].lt[selmon->tag[selmon->seltag].sellt]->arrange == tileup)
-			setmfact(&(const Arg){.f = +0.05});
-		else
-			focusstack(&(const Arg){.i = +1});
-		break;
-	case 1:
-		if (selmon->tag[selmon->seltag].lt[selmon->tag[selmon->seltag].sellt]->arrange == tiledown)
-			incnmaster(&(const Arg){.i = +1});
-		else if (selmon->tag[selmon->seltag].lt[selmon->tag[selmon->seltag].sellt]->arrange == tileleft)
-			movestack(&(const Arg){.i = +1});
-		else if (selmon->tag[selmon->seltag].lt[selmon->tag[selmon->seltag].sellt]->arrange == tileright)
-			movestack(&(const Arg){.i = +1});
-		else if (selmon->tag[selmon->seltag].lt[selmon->tag[selmon->seltag].sellt]->arrange == tileup)
-			incnmaster(&(const Arg){.i = -1});
-		break;
-	}
+	if (selmon->tag[selmon->seltag].lt[selmon->tag[selmon->seltag].sellt]->arrange == tiledown)
+		action(arg->i, Master);
+	else if (selmon->tag[selmon->seltag].lt[selmon->tag[selmon->seltag].sellt]->arrange == tileleft)
+		action(arg->i, Forward);
+	else if (selmon->tag[selmon->seltag].lt[selmon->tag[selmon->seltag].sellt]->arrange == tileright)
+		action(arg->i, Forward);
+	else if (selmon->tag[selmon->seltag].lt[selmon->tag[selmon->seltag].sellt]->arrange == tileup)
+		action(arg->i, Tile);
+	else
+		action(arg->i, Forward);
 }
 
 void
 actionleft(const Arg *arg)
 {
-	switch (arg->i) {
-	case 0:
-		if (selmon->tag[selmon->seltag].lt[selmon->tag[selmon->seltag].sellt]->arrange == tiledown)
-			focusstack(&(const Arg){.i = -1});
-		else if (selmon->tag[selmon->seltag].lt[selmon->tag[selmon->seltag].sellt]->arrange == tileleft)
-			setmfact(&(const Arg){.f = -0.05});
-		else if (selmon->tag[selmon->seltag].lt[selmon->tag[selmon->seltag].sellt]->arrange == tileright)
-			setmfact(&(const Arg){.f = +0.05});
-		else if (selmon->tag[selmon->seltag].lt[selmon->tag[selmon->seltag].sellt]->arrange == tileup)
-			focusstack(&(const Arg){.i = -1});
-		break;
-	case 1:
-		if (selmon->tag[selmon->seltag].lt[selmon->tag[selmon->seltag].sellt]->arrange == tiledown)
-			movestack(&(const Arg){.i = -1});
-		else if (selmon->tag[selmon->seltag].lt[selmon->tag[selmon->seltag].sellt]->arrange == tileleft)
-			incnmaster(&(const Arg){.i = +1});
-		else if (selmon->tag[selmon->seltag].lt[selmon->tag[selmon->seltag].sellt]->arrange == tileright)
-			incnmaster(&(const Arg){.i = -1});
-		else if (selmon->tag[selmon->seltag].lt[selmon->tag[selmon->seltag].sellt]->arrange == tileup)
-			movestack(&(const Arg){.i = -1});
-		break;
-	}
+	if (selmon->tag[selmon->seltag].lt[selmon->tag[selmon->seltag].sellt]->arrange == tiledown)
+		action(arg->i, Back);
+	else if (selmon->tag[selmon->seltag].lt[selmon->tag[selmon->seltag].sellt]->arrange == tileleft)
+		action(arg->i, Master);
+	else if (selmon->tag[selmon->seltag].lt[selmon->tag[selmon->seltag].sellt]->arrange == tileright)
+		action(arg->i, Tile);
+	else if (selmon->tag[selmon->seltag].lt[selmon->tag[selmon->seltag].sellt]->arrange == tileup)
+		action(arg->i, Back);
+	else
+		action(arg->i, Back);
 }
 
 void
 actionright(const Arg *arg)
 {
-	switch (arg->i) {
-	case 0:
-		if (selmon->tag[selmon->seltag].lt[selmon->tag[selmon->seltag].sellt]->arrange == tiledown)
-			focusstack(&(const Arg){.i = +1});
-		else if (selmon->tag[selmon->seltag].lt[selmon->tag[selmon->seltag].sellt]->arrange == tileleft)
-			setmfact(&(const Arg){.f = +0.05});
-		else if (selmon->tag[selmon->seltag].lt[selmon->tag[selmon->seltag].sellt]->arrange == tileright)
-			setmfact(&(const Arg){.f = -0.05});
-		else if (selmon->tag[selmon->seltag].lt[selmon->tag[selmon->seltag].sellt]->arrange == tileup)
-			focusstack(&(const Arg){.i = +1});
-		break;
-	case 1:
-		if (selmon->tag[selmon->seltag].lt[selmon->tag[selmon->seltag].sellt]->arrange == tiledown)
-			movestack(&(const Arg){.i = +1});
-		else if (selmon->tag[selmon->seltag].lt[selmon->tag[selmon->seltag].sellt]->arrange == tileleft)
-			incnmaster(&(const Arg){.i = -1});
-		else if (selmon->tag[selmon->seltag].lt[selmon->tag[selmon->seltag].sellt]->arrange == tileright)
-			incnmaster(&(const Arg){.i = +1});
-		else if (selmon->tag[selmon->seltag].lt[selmon->tag[selmon->seltag].sellt]->arrange == tileup)
-			movestack(&(const Arg){.i = +1});
-		break;
-	}
+	if (selmon->tag[selmon->seltag].lt[selmon->tag[selmon->seltag].sellt]->arrange == tiledown)
+		action(arg->i, Forward);
+	else if (selmon->tag[selmon->seltag].lt[selmon->tag[selmon->seltag].sellt]->arrange == tileleft)
+		action(arg->i, Tile);
+	else if (selmon->tag[selmon->seltag].lt[selmon->tag[selmon->seltag].sellt]->arrange == tileright)
+		action(arg->i, Master);
+	else if (selmon->tag[selmon->seltag].lt[selmon->tag[selmon->seltag].sellt]->arrange == tileup)
+		action(arg->i, Forward);
+	else
+		action(arg->i, Forward);
 }
 
 void
 actionup(const Arg *arg)
 {
-	switch (arg->i) {
-	case 0:
-		if (selmon->tag[selmon->seltag].lt[selmon->tag[selmon->seltag].sellt]->arrange == tiledown)
-			setmfact(&(const Arg){.f = +0.05});
-		else if (selmon->tag[selmon->seltag].lt[selmon->tag[selmon->seltag].sellt]->arrange == tileleft)
-			focusstack(&(const Arg){.i = -1});
-		else if (selmon->tag[selmon->seltag].lt[selmon->tag[selmon->seltag].sellt]->arrange == tileright)
-			focusstack(&(const Arg){.i = -1});
-		else if (selmon->tag[selmon->seltag].lt[selmon->tag[selmon->seltag].sellt]->arrange == tileup)
-			setmfact(&(const Arg){.f = -0.05});
-		else
-			focusstack(&(const Arg){.i = -1});
-		break;
-	case 1:
-		if (selmon->tag[selmon->seltag].lt[selmon->tag[selmon->seltag].sellt]->arrange == tiledown)
-			incnmaster(&(const Arg){.i = -1});
-		else if (selmon->tag[selmon->seltag].lt[selmon->tag[selmon->seltag].sellt]->arrange == tileleft)
-			movestack(&(const Arg){.i = -1});
-		else if (selmon->tag[selmon->seltag].lt[selmon->tag[selmon->seltag].sellt]->arrange == tileright)
-			movestack(&(const Arg){.i = -1});
-		else if (selmon->tag[selmon->seltag].lt[selmon->tag[selmon->seltag].sellt]->arrange == tileup)
-			incnmaster(&(const Arg){.i = +1});
-		break;
-	}
+	if (selmon->tag[selmon->seltag].lt[selmon->tag[selmon->seltag].sellt]->arrange == tiledown)
+		action(arg->i, Tile);
+	else if (selmon->tag[selmon->seltag].lt[selmon->tag[selmon->seltag].sellt]->arrange == tileleft)
+		action(arg->i, Back);
+	else if (selmon->tag[selmon->seltag].lt[selmon->tag[selmon->seltag].sellt]->arrange == tileright)
+		action(arg->i, Back);
+	else if (selmon->tag[selmon->seltag].lt[selmon->tag[selmon->seltag].sellt]->arrange == tileup)
+		action(arg->i, Master);
+	else
+		action(arg->i, Back);
 }
 
 void
@@ -767,6 +778,8 @@ createmon(void)
 	for (i = 0; i < LENGTH(tags); i++) {
 		m->tag[i].mfact = mfact;
 		m->tag[i].nmaster = nmaster;
+		m->tag[i].smaster = 0;
+		m->tag[i].stile = 0;
 		m->tag[i].showbar = showbar;
 		m->tag[i].lt[0] = &layouts[0];
 		m->tag[i].lt[1] = &layouts[1 % LENGTH(layouts)];
@@ -901,6 +914,9 @@ expose(XEvent *e)
 void
 focus(Client *c)
 {
+	unsigned int n;
+	Client *t;
+
 	if (!c || !ISVISIBLE(c))
 		for (c = selmon->stack; c && !ISVISIBLE(c); c = c->snext);
 	if (selmon->sel && selmon->sel != c)
@@ -919,6 +935,14 @@ focus(Client *c)
 		XSetInputFocus(dpy, root, RevertToPointerRoot, CurrentTime);
 		XDeleteProperty(dpy, root, netatom[NetActiveWindow]);
 	}
+	for (n = 0, t = nexttiled(selmon->clients); t; t = nexttiled(t->next), n++)
+		if (t == c) {
+			if (n < selmon->tag[selmon->seltag].nmaster)
+				selmon->tag[selmon->seltag].smaster = n;
+			else
+				selmon->tag[selmon->seltag].stile = n - selmon->tag[selmon->seltag].nmaster;
+			break;
+		}
 	selmon->sel = c;
 	drawbars();
 }
@@ -947,32 +971,6 @@ focusmon(const Arg *arg)
 	focus(NULL);
 }
 
-void
-focusstack(const Arg *arg)
-{
-	Client *c = NULL, *i;
-
-	if (!selmon->sel)
-		return;
-	if (arg->i > 0) {
-		for (c = selmon->sel->next; c && !ISVISIBLE(c); c = c->next);
-		if (!c)
-			for (c = selmon->clients; c && !ISVISIBLE(c); c = c->next);
-	} else {
-		for (i = selmon->clients; i != selmon->sel; i = i->next)
-			if (ISVISIBLE(i))
-				c = i;
-		if (!c)
-			for (; i; i = i->next)
-				if (ISVISIBLE(i))
-					c = i;
-	}
-	if (c) {
-		focus(c);
-		restack(selmon);
-	}
-}
-
 Atom
 getatomprop(Client *c, Atom prop)
 {
@@ -997,6 +995,80 @@ getrootptr(int *x, int *y)
 	Window dummy;
 
 	return XQueryPointer(dpy, root, &dummy, &dummy, x, y, &di, &di, &dui);
+}
+
+Client *
+getstackback() {
+	unsigned int n;
+	Client *c;
+
+	if (selmon->tag[selmon->seltag].lt[selmon->tag[selmon->seltag].sellt]->arrange == monocle) {
+		for (c = nexttiled(selmon->clients); c; c = nexttiled(c->next)) {
+			if (nexttiled(c->next) == selmon->sel || nexttiled(c->next) == NULL)
+				return c;
+		}
+		return c;
+	} else {
+		if(selmon->sel == selmon->clients)
+			return NULL;
+		for (n = 0, c = nexttiled(selmon->clients); c; c = nexttiled(c->next), n++)
+			if (nexttiled(c->next) == selmon->sel) {
+				if(n == selmon->tag[selmon->seltag].nmaster-1)
+					return NULL;
+				return c;
+			}
+	}
+	return NULL;
+}
+
+Client *
+getstackforward() {
+	unsigned int n;
+	Client *c;
+
+	if (selmon->tag[selmon->seltag].lt[selmon->tag[selmon->seltag].sellt]->arrange == monocle) {
+		c = nexttiled(selmon->sel->next);
+		if(!c)
+			c = nexttiled(selmon->clients);
+		return c;
+	} else {
+		if(nexttiled(selmon->sel->next) == NULL)
+			return NULL;
+		for (n = 0, c = nexttiled(selmon->clients); c; c = nexttiled(c->next), n++)
+			if (c == nexttiled(selmon->sel->next)) {
+				if (n == selmon->tag[selmon->seltag].nmaster)
+					return NULL;
+				return c;
+			}
+	}
+	return NULL;
+}
+
+Client *
+getstackmaster() {
+	unsigned int n;
+	Client *c;
+
+	if (selmon->tag[selmon->seltag].smaster > selmon->tag[selmon->seltag].nmaster-1)
+		selmon->tag[selmon->seltag].smaster = selmon->tag[selmon->seltag].nmaster-1;
+	for (n = 0, c = nexttiled(selmon->clients); c; c = nexttiled(c->next), n++)
+		if (n == selmon->tag[selmon->seltag].smaster)
+			return c;
+	return NULL;
+}
+
+Client *
+getstacktile() {
+	unsigned int n;
+	Client *c;
+
+	for (n = 0, c = nexttiled(selmon->clients); c; c = nexttiled(c->next), n++);
+	if (selmon->tag[selmon->seltag].stile > n-1-selmon->tag[selmon->seltag].nmaster)
+		selmon->tag[selmon->seltag].stile = n-1-selmon->tag[selmon->seltag].nmaster;
+	for (n = 0, c = nexttiled(selmon->clients); c; c = nexttiled(c->next), n++)
+		if (n == selmon->tag[selmon->seltag].nmaster + selmon->tag[selmon->seltag].stile)
+			return c;
+	return NULL;
 }
 
 long
@@ -1306,63 +1378,11 @@ movemouse(const Arg *arg)
 	}
 }
 
-void
-movestack(const Arg *arg)
-{
-	Client *c = NULL, *p = NULL, *pc = NULL, *i;
-
-	if (selmon->sel->isfloating)
-		return;
-	if (arg->i > 0) {
-		for (c = selmon->sel->next; c && (!ISVISIBLE(c) || c->isfloating); c = c->next);
-		if (!c)
-			for (c = selmon->clients; c && (!ISVISIBLE(c) || c->isfloating); c = c->next);
-
-	} else {
-		for (i = selmon->clients; i != selmon->sel; i = i->next)
-			if (ISVISIBLE(i) && !i->isfloating)
-				c = i;
-		if (!c)
-			for (; i; i = i->next)
-				if (ISVISIBLE(i) && !i->isfloating)
-					c = i;
-	}
-	for (i = selmon->clients; i && (!p || !pc); i = i->next) {
-		if (i->next == selmon->sel)
-			p = i;
-		if (i->next == c)
-			pc = i;
-	}
-	if (c && c != selmon->sel) {
-		Client *temp = selmon->sel->next==c?selmon->sel:selmon->sel->next;
-		selmon->sel->next = c->next==selmon->sel?c:c->next;
-		c->next = temp;
-		if (p && p != c)
-			p->next = c;
-		if (pc && pc != selmon->sel)
-			pc->next = selmon->sel;
-		if (selmon->sel == selmon->clients)
-			selmon->clients = c;
-		else if (c == selmon->clients)
-			selmon->clients = selmon->sel;
-		arrange(selmon);
-	}
-}
-
 Client *
 nexttiled(Client *c)
 {
 	for (; c && (c->isfloating || !ISVISIBLE(c)); c = c->next);
 	return c;
-}
-
-void
-pop(Client *c)
-{
-	detach(c);
-	attach(c);
-	focus(c);
-	arrange(c->mon);
 }
 
 void
@@ -1768,7 +1788,6 @@ setup(void)
 	focus(NULL);
 }
 
-
 void
 seturgent(Client *c, int urg)
 {
@@ -1822,6 +1841,32 @@ spawn(const Arg *arg)
 		perror(" failed");
 		exit(EXIT_SUCCESS);
 	}
+}
+
+void
+swapstack(Client *c1, Client *c2) {
+	Client *c, *p1 = NULL, *p2 = NULL;
+
+	if(!c1 || !c2 || c1->isfloating || c2->isfloating || c1 == c2)
+		return;
+	for (c = selmon->clients; c && (!p1 || !p2); c = c->next) {
+		if(c->next == c1)
+			p1 = c;
+		if(c->next == c2)
+			p2 = c;
+	}
+	c = c1->next == c2 ? c1 : c1->next;
+	c1->next = c2->next == c1 ? c2 : c2->next;
+	c2->next = c;
+	if (p1 && p1 != c2)
+		p1->next = c2;
+	if (p2 && p2 != c1)
+		p2->next = c1;
+	if (c1 == selmon->clients)
+		selmon->clients = c2;
+	else if (c2 == selmon->clients)
+		selmon->clients = c1;
+	arrange(selmon);
 }
 
 void
@@ -1966,6 +2011,16 @@ togglefloating(const Arg *arg)
 				selmon->sel->w, selmon->sel->h, 0);
 	}
 	arrange(selmon);
+}
+
+void
+togglemonocle(const Arg *arg)
+{
+	if (selmon->tag[selmon->seltag].lt[selmon->tag[selmon->seltag].sellt]->arrange == monocle) {
+		setlayout(0);
+	} else {
+		setlayout(&(const Arg){.v = &layouts[4]});
+	}
 }
 
 void
@@ -2382,20 +2437,6 @@ xerrorstart(Display *dpy, XErrorEvent *ee)
 {
 	die("dwm: another window manager is already running");
 	return -1;
-}
-
-void
-zoom(const Arg *arg)
-{
-	Client *c = selmon->sel;
-
-	if (!selmon->tag[selmon->seltag].lt[selmon->tag[selmon->seltag].sellt]->arrange
-	|| (selmon->sel && selmon->sel->isfloating))
-		return;
-	if (c == nexttiled(selmon->clients))
-		if (!c || !(c = nexttiled(c->next)))
-			return;
-	pop(c);
 }
 
 int
