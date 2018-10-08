@@ -1847,7 +1847,7 @@ tiledown(Monitor *m)
 {
 	unsigned int i, n, w, r, mh, mx, tx;
 	Client *c;
-	
+
 	for (n = 0, c = nexttiled(m->clients); c; c = nexttiled(c->next), n++);
 	if (n == 0)
 		return;
@@ -1872,7 +1872,7 @@ tileleft(Monitor *m)
 {
 	unsigned int i, n, h, r, mw, my, ty;
 	Client *c;
-	
+
 	for (n = 0, c = nexttiled(m->clients); c; c = nexttiled(c->next), n++);
 	if (n == 0)
 		return;
@@ -1897,7 +1897,7 @@ tileright(Monitor *m)
 {
 	unsigned int i, n, h, r, mw, my, ty;
 	Client *c;
-	
+
 	for (n = 0, c = nexttiled(m->clients); c; c = nexttiled(c->next), n++);
 	if (n == 0)
 		return;
@@ -1922,7 +1922,7 @@ tileup(Monitor *m)
 {
 	unsigned int i, n, w, r, mh, mx, tx;
 	Client *c;
-	
+
 	for (n = 0, c = nexttiled(m->clients); c; c = nexttiled(c->next), n++);
 	if (n == 0)
 		return;
