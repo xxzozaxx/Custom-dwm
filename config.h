@@ -2,8 +2,8 @@
 
 /* appearance */
 static const unsigned int borderpx  = 4;        /* border pixel of windows */
-static const unsigned int gappx     = 8;        /* gap pixel between windows */
-static const unsigned int marginpx  = 16;       /* margin pixel around windows */
+static const unsigned int gappx     = 0;        /* gap pixel between windows */
+static const unsigned int marginpx  = 0;        /* margin pixel around windows */
 static const unsigned int snap      = 4;        /* snap pixel */
 static const int showbar            = 1;        /* 0 means no bar */
 static const int topbar             = 0;        /* 0 means bottom bar */
@@ -86,7 +86,7 @@ static const char *volumeupcmd[] = { "sh", "-c", "~/Documents/Scripts/DynamicSta
 static const char *connectwirelesscmd[] = { "sh", "-c", "sudo ~/Documents/Scripts/DynamicStatus/wireless.sh", NULL };
 static const char *simplestatuscmd[] = { "dstatus", "s", "60", "~/Documents/Scripts/DynamicStatus/simple.sh", NULL };
 static const char *advancedstatuscmd[] = { "dstatus", "s", "1", "~/Documents/Scripts/DynamicStatus/advanced.sh", NULL };
-
+static const char *localhostcmd[] = { "surf", "http://localhost:7681", NULL };
 
 static Key keys[] = {
 	/* modifier                        key                          function           argument */
@@ -114,6 +114,7 @@ static Key keys[] = {
 	{ MODKEY,                          XK_m,                        spawn,             {.v = mediacmd } },
 	{ MODKEY,                          XK_c,                        spawn,             {.v = calculatorcmd } },
 	{ MODKEY,                          XK_p,                        spawn,             {.v = colorcmd } },
+	{ MODKEY,                          XK_l,                        spawn,             {.v = localhostcmd } },
 	{ MODKEY|ShiftMask,                XK_s,                        spawn,             {.v = simplestatuscmd } },
 	{ MODKEY|ShiftMask,                XK_a,                        spawn,             {.v = advancedstatuscmd } },
 	/* modifier                        key                          function           argument */
