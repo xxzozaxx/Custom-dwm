@@ -305,6 +305,8 @@ action(const int i, const int d)
 
 	switch (i) {
 	case 0:
+		if (selmon->sel == NULL)
+			return;
 		switch (d) {
 			case Master: c = getstackmaster(); break;
 			case Tile: c = getstacktile(); break;
@@ -317,6 +319,8 @@ action(const int i, const int d)
 		}
 		break;
 	case 1:
+		if (selmon->sel == NULL)
+			return;
 		switch (d) {
 		case Master: swapstack(selmon->sel, getstackmaster()); break;
 		case Tile: swapstack(selmon->sel, getstacktile()); break;
@@ -1025,7 +1029,6 @@ Client *
 getstackforward() {
 	unsigned int n;
 	Client *c;
-
 	if (selmon->tag[selmon->seltag].lt[selmon->tag[selmon->seltag].sellt]->arrange == monocle) {
 		c = nexttiled(selmon->sel->next);
 		if(!c)
