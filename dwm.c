@@ -1029,6 +1029,7 @@ Client *
 getstackforward() {
 	unsigned int n;
 	Client *c;
+
 	if (selmon->tag[selmon->seltag].lt[selmon->tag[selmon->seltag].sellt]->arrange == monocle) {
 		c = nexttiled(selmon->sel->next);
 		if(!c)
